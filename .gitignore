@@ -3,3 +3,6 @@ rai_env/
 
 # temporarily generated files
 z.*
+
+# temp folder
+temp/
