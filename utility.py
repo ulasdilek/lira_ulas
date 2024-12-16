@@ -43,6 +43,12 @@ def naive_is_in_line_of_sight(object_frame : ry.Frame, target_frame : ry.Frame, 
     copy_config.addFrame("point_B") \
         .setShape(ry.ST.marker, [.2]) \
         .setPosition(object_position)
+    copy_config.getFrame(OBJ_NAME).setContact(0)
+    copy_config.getFrame(EGO_NAME).setContact(0)
+
+    # copy_config.view_setCamera(copy_config.getFrame(CAMERA_NAME))
+    # copy_config.view(True)
+    # copy_config.view_close()
 
     is_in_sight = copy_config.getCollisionFree()
     del copy_config
@@ -127,6 +133,15 @@ def get_goal_score(
         + 5 * int(naive_is_in_line_of_sight(object_frame, agent_frame, config)) \
         + get_proximity_score(object_frame, goal_frame)
 
+# def get_goal_score(
+#         subgoal_frame : ry.Frame,
+#         object_frame : ry.Frame,
+#         goal_frame : ry.Frame,
+#         config : ry.Config) -> int:
+#     return 10 * int(naive_is_in_line_of_sight(subgoal_frame, goal_frame, config)) \
+#         + 5 * int(naive_is_in_line_of_sight(subgoal_frame, object_frame, config)) \
+#         + get_proximity_score(subgoal_frame, goal_frame)
+
 
 def reachable(reach_config : ry.Config, object_frame : ry.Frame) -> bool:
     copy_config = ry.Config()
@@ -164,7 +179,14 @@ def reject(rej_config : ry.Config, solution_tree : 'SolutionTree') -> bool:
 POINT_COUNT = 200
 THRESHOLD = 4
 SUBSET_SIZE = 25
+# counter = 0
 def propose_subgoals(config : ry.Config, object_frame : ry.Frame) -> list:
+    # global counter
+    # points = [np.array([-1.75, -1.4]), np.array([0, 0]), np.array([0.5, 0.4])]
+    # point_subset = [points[counter]]
+    # counter += 1
+    # return point_subset
+
     generated_points = np.random.uniform(low=-2, high=2, size=(POINT_COUNT, 2)) # random point sampling
 
     filtered_points = []
@@ -172,7 +194,8 @@ def propose_subgoals(config : ry.Config, object_frame : ry.Frame) -> list:
         copy_config = ry.Config()
         copy_config.addConfigurationCopy(config)
 
-        obj_pos = copy_config.getFrame(OBJ_NAME).getPosition()
+        obj_pos = object_frame.getPosition()
+        # copy_config.getFrame(SUB_GOAL_NAME).setPosition([point[0], point[1], obj_pos[2]])
         copy_config.getFrame(OBJ_NAME).setPosition([point[0], point[1], obj_pos[2]])
 
         if not copy_config.getCollisionFree():
@@ -192,6 +215,23 @@ def propose_subgoals(config : ry.Config, object_frame : ry.Frame) -> list:
     point_subset = points_array[np.random.choice(points_array.shape[0], size=subset_size, replace=False)]
 
     return point_subset
+
+
+def display_points(config : ry.Config, subgoals : list) -> None:
+    test_config = ry.Config()
+    test_config.addConfigurationCopy(config)
+    test_config.view_setCamera(config.getFrame(CAMERA_NAME))
+    count = 0
+    for point in subgoals:
+        count += 1
+        test_config.addFrame(f"sg_{count}") \
+            .setShape(ry.ST.sphere, [.05]) \
+            .setPosition(list(point) + [0.2]) \
+            .setColor([1, 0, 1])
+        
+    test_config.view(True)
+    test_config.view_close()
+    del test_config
 
 
 def animate_solution(anim_config, solution):
