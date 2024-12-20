@@ -22,7 +22,7 @@ def naive_is_in_line_of_sight(object_frame : ry.Frame, target_frame : ry.Frame, 
     offset = frame_hypotenuse / 2 # can be made more precise
 
     box_length = np.sqrt(sight_ray[0]**2 + sight_ray[1]**2) - 2 * offset
-    box_width = 0.05
+    box_width = 0.01
     box_height = .2
 
     box_x = object_position[0] + sight_ray[0]/2
@@ -116,22 +116,35 @@ def polar_to_cartesian(coordinates):
 
 def get_proximity_score(object_frame : ry.Frame, goal_frame : ry.Frame) -> int:
     distance = np.linalg.norm(object_frame.getPosition()[:2] - goal_frame.getPosition()[:2])
-    if distance < 0.2:
-        return 5
-    elif distance < 0.4:
-        return 2
-    else:
+    measure = (1.2 - distance)/1.2
+    if measure < 0:
         return 0
+    else:
+        return measure
 
 
 def get_goal_score(
+        subgoal_frame : ry.Frame,
         object_frame : ry.Frame,
         agent_frame : ry.Frame,
         goal_frame : ry.Frame,
         config : ry.Config) -> int:
-    return 10 * int(naive_is_in_line_of_sight(object_frame, goal_frame, config)) \
-        + 5 * int(naive_is_in_line_of_sight(object_frame, agent_frame, config)) \
-        + get_proximity_score(object_frame, goal_frame)
+    c_goal = 2
+    c_object = 3
+    c_agent = 2
+    c_prox_goal = 3
+    c_prox_object = 3
+    if get_proximity_score(agent_frame, object_frame) > 0.8:
+        c_goal = 3
+        c_object = 3
+        c_agent = 0
+        c_prox_goal = 4
+        c_prox_object = 2
+    return c_goal * int(naive_is_in_line_of_sight(subgoal_frame, goal_frame, config)) \
+        + c_object * int(naive_is_in_line_of_sight(subgoal_frame, object_frame, config)) \
+        + c_agent * int(naive_is_in_line_of_sight(subgoal_frame, agent_frame, config)) \
+        + c_prox_goal * get_proximity_score(subgoal_frame, goal_frame) \
+        + c_prox_object * get_proximity_score(subgoal_frame, object_frame)
 
 # def get_goal_score(
 #         subgoal_frame : ry.Frame,
@@ -177,8 +190,8 @@ def reject(rej_config : ry.Config, solution_tree : 'SolutionTree') -> bool:
 
 
 POINT_COUNT = 200
-THRESHOLD = 4
-SUBSET_SIZE = 25
+THRESHOLD = 5
+SUBSET_SIZE = 50
 # counter = 0
 def propose_subgoals(config : ry.Config, object_frame : ry.Frame) -> list:
     # global counter
@@ -195,13 +208,16 @@ def propose_subgoals(config : ry.Config, object_frame : ry.Frame) -> list:
         copy_config.addConfigurationCopy(config)
 
         obj_pos = object_frame.getPosition()
-        # copy_config.getFrame(SUB_GOAL_NAME).setPosition([point[0], point[1], obj_pos[2]])
+        copy_config.getFrame(SUB_GOAL_NAME).setPosition([point[0], point[1], obj_pos[2]])
         copy_config.getFrame(OBJ_NAME).setPosition([point[0], point[1], obj_pos[2]])
 
         if not copy_config.getCollisionFree():
             del copy_config
             continue
-        score = get_goal_score(copy_config.getFrame(OBJ_NAME),
+        copy_config.getFrame(OBJ_NAME).setPosition(obj_pos)
+
+        score = get_goal_score(copy_config.getFrame(SUB_GOAL_NAME),
+                               copy_config.getFrame(OBJ_NAME),
                                copy_config.getFrame(EGO_NAME),
                                copy_config.getFrame(GOAL_NAME),
                                copy_config)
@@ -234,10 +250,12 @@ def display_points(config : ry.Config, subgoals : list) -> None:
     del test_config
 
 
-def animate_solution(anim_config, solution):
+def animate_solution(anim_config, solution, save_pngs=False, png_path=""):
     for state in solution.x:
         anim_config.setJointState(state)
         anim_config.view()
+        if save_pngs:
+            anim_config.view_savePng(png_path)
         time.sleep(0.025)
 
 
@@ -249,8 +267,9 @@ class SolutionNode:
         if score is None:
             copy_config = ry.Config()
             copy_config.addConfigurationCopy(goal_config)
-            copy_config.getFrame(OBJ_NAME).setPosition(copy_config.getFrame(SUB_GOAL_NAME).getPosition())
-            self.score = get_goal_score(copy_config.getFrame(OBJ_NAME),
+            # copy_config.getFrame(OBJ_NAME).setPosition(copy_config.getFrame(SUB_GOAL_NAME).getPosition())
+            self.score = get_goal_score(copy_config.getFrame(SUB_GOAL_NAME),
+                                        copy_config.getFrame(OBJ_NAME),
                                         copy_config.getFrame(EGO_NAME),
                                         copy_config.getFrame(GOAL_NAME),
                                         copy_config)
