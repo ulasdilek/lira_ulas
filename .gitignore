@@ -6,3 +6,6 @@ z.*
 
 # temp folder
 temp/
+
+# pycache folder
+__pycache__/
