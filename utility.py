@@ -131,7 +131,7 @@ def get_goal_score(
         config : ry.Config) -> int:
     c_goal = 2
     c_object = 3
-    c_agent = 2
+    c_agent = 3
     c_prox_goal = 3
     c_prox_object = 3
     if get_proximity_score(agent_frame, object_frame) > 0.8:
@@ -175,15 +175,15 @@ def reject(rej_config : ry.Config, solution_tree : 'SolutionTree') -> bool:
     SIMILARITY_THRESHOLD = 0.05
     count   = 0
     for node in solution_tree.list1:
-        if np.linalg.norm(rej_config.getFrame(OBJ_NAME).getPosition()[:2] - node.get_config().getFrame(OBJ_NAME).getPosition()[:2]) < SIMILARITY_THRESHOLD:
+        if np.linalg.norm(rej_config.getFrame(SUB_GOAL_NAME).getPosition()[:2] - node.get_config().getFrame(OBJ_NAME).getPosition()[:2]) < SIMILARITY_THRESHOLD:
             count += 1
         
     for node in solution_tree.list2:
-        if np.linalg.norm(rej_config.getFrame(OBJ_NAME).getPosition()[:2] - node.get_config().getFrame(OBJ_NAME).getPosition()[:2]) < SIMILARITY_THRESHOLD:
+        if np.linalg.norm(rej_config.getFrame(SUB_GOAL_NAME).getPosition()[:2] - node.get_config().getFrame(OBJ_NAME).getPosition()[:2]) < SIMILARITY_THRESHOLD:
             count += 1
     
     for node in solution_tree.list3:
-        if np.linalg.norm(rej_config.getFrame(OBJ_NAME).getPosition()[:2] - node.get_config().getFrame(OBJ_NAME).getPosition()[:2]) < SIMILARITY_THRESHOLD:
+        if np.linalg.norm(rej_config.getFrame(SUB_GOAL_NAME).getPosition()[:2] - node.get_config().getFrame(OBJ_NAME).getPosition()[:2]) < SIMILARITY_THRESHOLD:
             count += 1
         
     return count > 1
