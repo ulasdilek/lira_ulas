@@ -259,6 +259,11 @@ def animate_solution(anim_config, solution, save_pngs=False, png_path=""):
         time.sleep(0.025)
 
 
+def vertex_to_position(vertex, step_size) -> np.ndarray:
+    grid_offset = np.array([2/step_size, 2/step_size]).astype(int)
+    return (np.array(vertex) - grid_offset) * step_size
+
+
 class SolutionNode:
     def __init__(self, goal_config : ry.Config, score : float = None, parent : 'SolutionNode' = None):
         self.goal_config = goal_config

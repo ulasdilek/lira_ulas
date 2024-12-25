@@ -51,42 +51,45 @@ def shortest_path(graph, start, end):
                 pq.put((new_distance, neighbor))
     return None  # No path found
 
-def find_bottleneck_vertices(paths):
+def find_bottleneck_vertices(paths : list, N : int) -> list:
     """
-    Detect bottleneck vertices based on their frequency of occurrence in paths.
+    Detect the N most-used bottleneck vertices based on their frequency of occurrence in paths.
     """
     all_vertices = [vertex for path in paths for vertex in path]
     vertex_counts = Counter(all_vertices)
-    max_usage = max(vertex_counts.values())
     
-    # Define a bottleneck as vertices used more than 50% of the max usage
-    bottleneck_vertices = [vertex for vertex, count in vertex_counts.items() if count > max_usage * 0.5]
+    # Get the N most common vertices
+    bottleneck_vertices = [vertex for vertex, count in vertex_counts.most_common(N)]
     return bottleneck_vertices
 
-if __name__ == "__main__":
-    # Load the configuration and convert it to a graph
-    config = ry.Config()
-    config.addFile("puzzles/p6-wall.g")
-    graph, obj_vertex = graph_from_config(config)
-
-    # Define parameters
-    radius = 2.0  # Radius in actual distance
-    step_size = 0.1  # Same as the STEP_SIZE used in the grid generation
-
-    # Step 1: Obtain target vertices
+def bottleneck_vertices_from_config(config : ry.Config, radius : float, step_size : float, vertex_count=100) -> list:
+    """
+    Perform bottleneck analysis on a given configuration.
+    """
+    graph, obj_vertex = graph_from_config(config, step_size=step_size)
     target_vertices = get_target_vertices(graph, obj_vertex, radius, step_size)
-    print(f"Target vertices within radius {radius}: {target_vertices}")
-
-    # Step 2: Find shortest paths to each target vertex
     paths = []
     for target in target_vertices:
         path = shortest_path(graph, obj_vertex, target)
         if path:
             paths.append(path)
+    return find_bottleneck_vertices(paths, vertex_count)
 
-    # Step 3: Detect bottleneck vertices
-    bottleneck_vertices = find_bottleneck_vertices(paths)
-    print(f"Bottleneck vertices: {bottleneck_vertices}")
+if __name__ == "__main__":
+    # Define parameters
+    radius = 3.0  # Radius in actual distance
+    step_size = 0.05  # Same as the step_size used in the grid generation
+    bottleneck_threshold = 0.25  # Bottleneck threshold as a fraction of the maximum usage
+    vertex_count = 200  # Number of bottleneck vertices to identify
+
+    # Load the configuration and convert it to a graph
+    config = ry.Config()
+    config.addFile("puzzles/p3-maze.g")
+    config.getFrame("obj").setPosition([0.2, 0.5, 0.2])
+    graph, obj_vertex = graph_from_config(config, step_size)
+
+    # Perform bottleneck analysis
+    bottleneck_vertices = bottleneck_vertices_from_config(config, radius, step_size, vertex_count=vertex_count)
 
     # Visualize the graph and bottleneck vertices
     fig, ax = plt.subplots()

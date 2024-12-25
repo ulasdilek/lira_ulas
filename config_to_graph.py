@@ -5,22 +5,21 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from collections import defaultdict
 
-def graph_from_config(config : ry.Config) -> dict:
+def graph_from_config(config : ry.Config, step_size : float) -> dict:
     wall_names = []
     OBJ_NAME = "obj"
     for entity in config.getFrameNames():
         if "wall" in entity.lower():
             wall_names.append(entity)
         
-    STEP_SIZE = 0.1
     obj_size = config.getFrame(OBJ_NAME).getSize()
     obj_width = obj_size[0]
     obj_height = obj_size[1]
     size_offset = np.array([obj_width, obj_height])
-    grid_offset = np.array([2/STEP_SIZE, 2/STEP_SIZE]).astype(int)
+    grid_offset = np.array([2/step_size, 2/step_size]).astype(int)
 
     # grid_config = ry.Config()
-    occupancy_grid = np.ones((int(4/STEP_SIZE), int(4/STEP_SIZE)))
+    occupancy_grid = np.ones((int(4/step_size), int(4/step_size)))
     for wall in wall_names:
         print(f"Adding: {wall}")
         wall_frame = config.getFrame(wall)
@@ -30,7 +29,7 @@ def graph_from_config(config : ry.Config) -> dict:
         wall_anchor = wall_position - wall_size/2.0
         wall_end = wall_position + wall_size/2.0
         # get the indices over which the wall spans
-        wall_indices = np.array([wall_anchor, wall_end])/STEP_SIZE + grid_offset
+        wall_indices = np.array([wall_anchor, wall_end])/step_size + grid_offset
         wall_indices = wall_indices.astype(int)
         # cutoff indices to fit within the grid
         wall_indices = np.clip(wall_indices, 0, occupancy_grid.shape)
@@ -58,7 +57,7 @@ def graph_from_config(config : ry.Config) -> dict:
     # grid_config.view_close
     # del grid_config
 
-    obj_vertex = (config.getFrame(OBJ_NAME).getPosition()[:2]/STEP_SIZE).astype(int) + grid_offset
+    obj_vertex = (config.getFrame(OBJ_NAME).getPosition()[:2]/step_size).astype(int) + grid_offset
 
     return graph_from_grid(occupancy_grid), obj_vertex
 
@@ -88,8 +87,8 @@ def graph_from_grid(grid: np.ndarray) -> dict:
 
 if __name__ == "__main__":
     config = ry.Config()
-    config.addFile("puzzles/p6-wall.g")
-    graph, obj_vertex = graph_from_config(config)
+    config.addFile("puzzles/p3-maze.g")
+    graph, obj_vertex = graph_from_config(config, 0.05)
 
     # Visualize the graph using matplotlib
     fig, ax = plt.subplots()
