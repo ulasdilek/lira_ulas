@@ -1,0 +1,9 @@
+Puzzle,Strategy,Average Time (ms),Variance Time (ms),Average Steps,Variance Steps
+p2-maze-easy,fpr,2397.3159790039062,0.0,183.0,0.0
+p2-maze-easy,bottleneck,1436.356782913208,0.0,179.0,0.0
+p5-wall-easy,fpr,2127.114772796631,0.0,275.0,0.0
+p5-wall-easy,bottleneck,587.2247219085693,0.0,268.0,0.0
+p8-corner,fpr,11318.495512008667,0.0,198.0,0.0
+p8-corner,bottleneck,12407.653093338013,0.0,175.0,0.0
+p9-cube-free,fpr,119.8725700378418,0.0,145.0,0.0
+p9-cube-free,bottleneck,527.5821685791016,0.0,132.0,0.0

@@ -7,13 +7,13 @@ import numpy as np
 import csv
 
 puzzles = [
-    "p1-two-blocks",
+    # "p1-two-blocks",
     "p2-maze-easy",
-    "p3-maze",
-    "p4-four-blocks",
+    # "p3-maze",
+    # "p4-four-blocks",
     "p5-wall-easy",
-    "p6-wall",
-    "p7-o-room",
+    # "p6-wall",
+    # "p7-o-room",
     "p8-corner",
     "p9-cube-free"
 ]
@@ -170,11 +170,11 @@ def solve_with_fpr(puzzle_name):
             
     step_count += len(solution1.x)
     config.setJointState(solution1.x[-1])
-    config.attach(EGO_NAME, target_obj_name)
+    config.attach(EGO_NAME, GOAL_OBJ_NAME)
     
     step_count += len(solution2.x)
     config.setJointState(solution2.x[-1])
-    config.attach(FLOOR_NAME, target_obj_name)
+    config.attach(FLOOR_NAME, GOAL_OBJ_NAME)
 
     del config
 
@@ -259,11 +259,11 @@ def solve_with_bottleneck(puzzle_name):
             
     step_count += len(solution1.x)
     config.setJointState(solution1.x[-1])
-    config.attach(EGO_NAME, target_obj_name)
+    config.attach(EGO_NAME, GOAL_OBJ_NAME)
     
     step_count += len(solution2.x)
     config.setJointState(solution2.x[-1])
-    config.attach(FLOOR_NAME, target_obj_name)
+    config.attach(FLOOR_NAME, GOAL_OBJ_NAME)
 
     del config
 
@@ -307,7 +307,7 @@ for puzzle_name in puzzles:
                 "var_steps": var_steps
             }
 
-with open("/results.csv", "w", newline='') as csvfile:
+with open("results.csv", "w", newline='') as csvfile:
     fieldnames = ['Puzzle', 'Strategy', 'Average Time (ms)', 'Variance Time (ms)', 'Average Steps', 'Variance Steps']
     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
