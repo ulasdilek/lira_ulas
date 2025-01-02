@@ -18,7 +18,7 @@ obj1(floor) {
 
 
 obj2(floor) {
-    shape:ssBox, Q:[-0.9 1.45 .15], size:[.2 1 .2 .02], logical={ object } nomass:1,  color:[1.0 1.0 1.0],
+    shape:ssBox, Q:[-0.9 1.44 .15], size:[.2 1 .2 .02], logical={ object } nomass:1,  color:[1.0 1.0 1.0],
     joint:rigid, friction:.1  contact: 1
 }
 

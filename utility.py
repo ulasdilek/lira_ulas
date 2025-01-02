@@ -4,7 +4,7 @@ from bisect import bisect_left
 import time
 
 EGO_NAME = "ego"
-OBJ_NAME = "obj"
+GOAL_OBJ_NAME = "obj"
 SUB_GOAL_NAME = "sub-goal1"
 GOAL_NAME = "goal"
 CAMERA_NAME = "camera_top"
@@ -43,8 +43,8 @@ def naive_is_in_line_of_sight(object_frame : ry.Frame, target_frame : ry.Frame, 
     copy_config.addFrame("point_B") \
         .setShape(ry.ST.marker, [.2]) \
         .setPosition(object_position)
-    copy_config.getFrame(OBJ_NAME).setContact(0)
-    copy_config.getFrame(EGO_NAME).setContact(0)
+    setContact(copy_config, GOAL_OBJ_NAME, 0)
+    setContact(copy_config, EGO_NAME, 0)
 
     # copy_config.view_setCamera(copy_config.getFrame(CAMERA_NAME))
     # copy_config.view(True)
@@ -146,26 +146,31 @@ def get_goal_score(
         + c_prox_goal * get_proximity_score(subgoal_frame, goal_frame) \
         + c_prox_object * get_proximity_score(subgoal_frame, object_frame)
 
-# def get_goal_score(
-#         subgoal_frame : ry.Frame,
-#         object_frame : ry.Frame,
-#         goal_frame : ry.Frame,
-#         config : ry.Config) -> int:
-#     return 10 * int(naive_is_in_line_of_sight(subgoal_frame, goal_frame, config)) \
-#         + 5 * int(naive_is_in_line_of_sight(subgoal_frame, object_frame, config)) \
-#         + get_proximity_score(subgoal_frame, goal_frame)
 
-
-def reachable(reach_config : ry.Config, object_frame : ry.Frame) -> bool:
+def reachable(reach_config : ry.Config, object_name : str) -> bool:
     copy_config = ry.Config()
     copy_config.addConfigurationCopy(reach_config)
-    copy_config.getFrame(OBJ_NAME).setContact(0)
+    # setContact(copy_config, object_name, 0)
+    copy_config.getFrame(object_name).setContact(0)
     rrt = ry.PathFinder()
     rrt.setProblem(copy_config,
                    [copy_config.getJointState()],
-                   [object_frame.getPosition()[:2] - copy_config.getFrame(EGO_NAME).getPosition()[:2]] + copy_config.getJointState())
+                   [copy_config.getFrame(object_name).getPosition()[:2] - copy_config.getFrame(EGO_NAME).getPosition()[:2]] + copy_config.getJointState())
     ret = rrt.solve()
     del rrt
+    pos_a = copy_config.getJointState().tolist() + [0.2]
+    pos_b = (copy_config.getFrame(object_name).getPosition()[:2] - copy_config.getFrame(EGO_NAME).getPosition()[:2] + copy_config.getJointState()).tolist() + [0.2]
+    # copy_config.addFrame("pointA") \
+    #     .setShape(ry.ST.sphere, [0.5]) \
+    #     .setPosition(pos_a) \
+    #     .setColor([1, 1, 0])
+    # copy_config.addFrame("pointB") \
+    #     .setShape(ry.ST.sphere, [0.5]) \
+    #     .setPosition(pos_b) \
+    #     .setColor([0, 1, 1])
+    # copy_config.view_setCamera(copy_config.getFrame(CAMERA_NAME))
+    # copy_config.view(True)
+    # copy_config.view_close()
     del copy_config
     return ret.feasible
 
@@ -173,17 +178,17 @@ def reachable(reach_config : ry.Config, object_frame : ry.Frame) -> bool:
 def reject(rej_config : ry.Config, solution_tree : 'SolutionTree') -> bool:
     # calculate a similarity value for configurations, based on the discretized positions of movable objects, and reject similar configurations
     SIMILARITY_THRESHOLD = 0.05
-    count   = 0
+    count = 0
     for node in solution_tree.list1:
-        if np.linalg.norm(rej_config.getFrame(SUB_GOAL_NAME).getPosition()[:2] - node.get_config().getFrame(OBJ_NAME).getPosition()[:2]) < SIMILARITY_THRESHOLD:
+        if np.linalg.norm(rej_config.getFrame(SUB_GOAL_NAME).getPosition()[:2] - node.get_config().getFrame(GOAL_OBJ_NAME).getPosition()[:2]) < SIMILARITY_THRESHOLD:
             count += 1
         
     for node in solution_tree.list2:
-        if np.linalg.norm(rej_config.getFrame(SUB_GOAL_NAME).getPosition()[:2] - node.get_config().getFrame(OBJ_NAME).getPosition()[:2]) < SIMILARITY_THRESHOLD:
+        if np.linalg.norm(rej_config.getFrame(SUB_GOAL_NAME).getPosition()[:2] - node.get_config().getFrame(GOAL_OBJ_NAME).getPosition()[:2]) < SIMILARITY_THRESHOLD:
             count += 1
     
     for node in solution_tree.list3:
-        if np.linalg.norm(rej_config.getFrame(SUB_GOAL_NAME).getPosition()[:2] - node.get_config().getFrame(OBJ_NAME).getPosition()[:2]) < SIMILARITY_THRESHOLD:
+        if np.linalg.norm(rej_config.getFrame(SUB_GOAL_NAME).getPosition()[:2] - node.get_config().getFrame(GOAL_OBJ_NAME).getPosition()[:2]) < SIMILARITY_THRESHOLD:
             count += 1
         
     return count > 1
@@ -193,7 +198,7 @@ POINT_COUNT = 200
 THRESHOLD = 5
 SUBSET_SIZE = 50
 # counter = 0
-def propose_subgoals(config : ry.Config, object_frame : ry.Frame) -> list:
+def propose_subgoals(config : ry.Config, object_name : str) -> list:
     # global counter
     # points = [np.array([-1.75, -1.4]), np.array([0, 0]), np.array([0.5, 0.4])]
     # point_subset = [points[counter]]
@@ -207,17 +212,17 @@ def propose_subgoals(config : ry.Config, object_frame : ry.Frame) -> list:
         copy_config = ry.Config()
         copy_config.addConfigurationCopy(config)
 
-        obj_pos = object_frame.getPosition()
+        obj_pos = copy_config.getFrame(object_name).getPosition()
         copy_config.getFrame(SUB_GOAL_NAME).setPosition([point[0], point[1], obj_pos[2]])
-        copy_config.getFrame(OBJ_NAME).setPosition([point[0], point[1], obj_pos[2]])
+        copy_config.getFrame(object_name).setPosition([point[0], point[1], obj_pos[2]])
 
         if not copy_config.getCollisionFree():
             del copy_config
             continue
-        copy_config.getFrame(OBJ_NAME).setPosition(obj_pos)
+        copy_config.getFrame(object_name).setPosition(obj_pos)
 
         score = get_goal_score(copy_config.getFrame(SUB_GOAL_NAME),
-                               copy_config.getFrame(OBJ_NAME),
+                               copy_config.getFrame(GOAL_OBJ_NAME),
                                copy_config.getFrame(EGO_NAME),
                                copy_config.getFrame(GOAL_NAME),
                                copy_config)
@@ -225,7 +230,7 @@ def propose_subgoals(config : ry.Config, object_frame : ry.Frame) -> list:
         if score >= THRESHOLD:
             filtered_points.append(point)
 
-    filtered_points.append(object_frame.getPosition()[:2])
+    filtered_points.append(config.getFrame(object_name).getPosition()[:2])
     points_array = np.array(filtered_points)
     subset_size = min(len(filtered_points), SUBSET_SIZE)
     point_subset = points_array[np.random.choice(points_array.shape[0], size=subset_size, replace=False)]
@@ -265,16 +270,17 @@ def vertex_to_position(vertex, step_size) -> np.ndarray:
 
 
 class SolutionNode:
-    def __init__(self, goal_config : ry.Config, score : float = None, parent : 'SolutionNode' = None):
+    def __init__(self, goal_config : ry.Config, target_obj : str, score : float = None, parent : 'SolutionNode' = None):
         self.goal_config = goal_config
         self.parent = parent
         self.children = []
+        self.target_obj = target_obj
         if score is None:
             copy_config = ry.Config()
             copy_config.addConfigurationCopy(goal_config)
             # copy_config.getFrame(OBJ_NAME).setPosition(copy_config.getFrame(SUB_GOAL_NAME).getPosition())
             self.score = get_goal_score(copy_config.getFrame(SUB_GOAL_NAME),
-                                        copy_config.getFrame(OBJ_NAME),
+                                        copy_config.getFrame(GOAL_OBJ_NAME),
                                         copy_config.getFrame(EGO_NAME),
                                         copy_config.getFrame(GOAL_NAME),
                                         copy_config)
@@ -289,8 +295,8 @@ class SolutionNode:
     def __eq__(self, other):
         return self.score == other.score
 
-    def add_child(self, new_goal : ry.Config, score : float = None) -> 'SolutionNode':
-        new_node = SolutionNode(new_goal, score, parent=self)
+    def add_child(self, new_goal : ry.Config, target_obj : str, score : float = None) -> 'SolutionNode':
+        new_node = SolutionNode(new_goal, target_obj, score, parent=self)
         self.children.append(new_node)
         return new_node
     
