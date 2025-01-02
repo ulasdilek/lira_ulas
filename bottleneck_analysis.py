@@ -42,16 +42,16 @@ def shortest_path(graph, start, end):
                 current_vertex = predecessors[current_vertex]
             return path[::-1]  # Reverse the path
 
-        for neighbor in graph[current_vertex]:
+        for neighbor, weight in graph[current_vertex]:
             neighbor = tuple(neighbor)
-            new_distance = current_distance + 1  # Each edge has a weight of 1
+            new_distance = current_distance + weight
             if neighbor not in distances or new_distance < distances[neighbor]:
                 distances[neighbor] = new_distance
                 predecessors[neighbor] = current_vertex
                 pq.put((new_distance, neighbor))
     return None  # No path found
 
-def find_bottleneck_vertices(paths : list, bottleneck_threshold : float) -> list:
+def find_bottleneck_vertices(paths, bottleneck_threshold):
     """
     Identify vertices that are bottleneck vertices based on the given paths.
     """
@@ -62,7 +62,7 @@ def find_bottleneck_vertices(paths : list, bottleneck_threshold : float) -> list
     bottleneck_vertices = [vertex for vertex, count in vertex_counts.items() if count > max_usage * bottleneck_threshold]
     return bottleneck_vertices
 
-def bottleneck_vertices_from_config(config : ry.Config, radius : float, step_size : float, bottleneck_threshold=0.5) -> list:
+def bottleneck_vertices_from_config(config, radius, step_size, bottleneck_threshold=0.5):
     """
     Perform bottleneck analysis on a given configuration.
     """
@@ -94,7 +94,7 @@ if __name__ == "__main__":
     # Visualize the graph and bottleneck vertices
     fig, ax = plt.subplots()
     for node, neighbors in graph.items():
-        for neighbor in neighbors:
+        for neighbor, weight in neighbors:
             ax.plot([node[1], neighbor[1]], [node[0], neighbor[0]], 'k-')
 
     # Highlight bottleneck vertices
