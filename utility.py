@@ -208,7 +208,7 @@ def reject(rej_config : ry.Config, solution_tree : 'SolutionTree') -> bool:
 
 
 POINT_COUNT = 200
-THRESHOLD = 0 # set to 0 for testing. original : 5
+THRESHOLD = 4 # set to 0 for testing. original : 5
 SUBSET_SIZE = 50
 # counter = 0
 def propose_subgoals(config : ry.Config, object_name : str) -> list:
@@ -232,13 +232,17 @@ def propose_subgoals(config : ry.Config, object_name : str) -> list:
         if not copy_config.getCollisionFree():
             del copy_config
             continue
-        copy_config.getFrame(object_name).setPosition(obj_pos)
 
         score = get_goal_score(copy_config.getFrame(SUB_GOAL_NAME),
                                copy_config.getFrame(object_name),
                                copy_config.getFrame(EGO_NAME),
                                copy_config.getFrame(GOAL_NAME),
                                copy_config)
+        score = get_config_score(copy_config.getFrame(GOAL_OBJ_NAME),
+                                copy_config.getFrame(EGO_NAME),
+                                copy_config.getFrame(GOAL_NAME),
+                                copy_config)
+        copy_config.getFrame(object_name).setPosition(obj_pos)
         del copy_config
         if score >= THRESHOLD:
             filtered_points.append(point)
