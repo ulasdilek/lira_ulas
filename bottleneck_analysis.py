@@ -85,7 +85,7 @@ if __name__ == "__main__":
     # Load the configuration and convert it to a graph
     config = ry.Config()
     config.addFile("puzzles/p3-maze.g")
-    config.getFrame("obj").setPosition([0.2, 0.5, 0.2])
+    # config.getFrame("obj").setPosition([0.2, 0.5, 0.2]) # manual override for p3-maze
     graph, obj_vertex = graph_from_config(config, step_size)
 
     # Perform bottleneck analysis
