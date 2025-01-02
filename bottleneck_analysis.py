@@ -5,9 +5,9 @@ import matplotlib.pyplot as plt
 from collections import defaultdict, Counter
 from queue import PriorityQueue
 
-def get_target_vertices(graph, obj_vertex, radius, step_size):
+def get_target_vertices(graph, obj_vertex, inner_radius, outer_radius, step_size):
     """
-    Identify vertices within a given radius from the object vertex.
+    Identify vertices within a given inner and outer radii from the object vertex.
     The radius is measured in actual distance, not grid indices.
     """
     targets = []
@@ -15,7 +15,7 @@ def get_target_vertices(graph, obj_vertex, radius, step_size):
     for vertex in graph.keys():
         vertex_position = np.array(vertex) * step_size
         distance = np.linalg.norm(vertex_position - obj_position)
-        if distance <= radius:
+        if inner_radius <= distance <= outer_radius:
             targets.append(vertex)
     return targets
 
@@ -51,33 +51,34 @@ def shortest_path(graph, start, end):
                 pq.put((new_distance, neighbor))
     return None  # No path found
 
-def find_bottleneck_vertices(paths, bottleneck_threshold):
+def find_bottleneck_vertices(paths, inner_radius, step_size, bottleneck_threshold):
     """
     Identify vertices that are bottleneck vertices based on the given paths.
     """
-    all_vertices = [vertex for path in paths for vertex in path]
+    all_vertices = [vertex for path in paths for vertex in path if np.linalg.norm(np.array(vertex) * step_size - np.array(paths[0][0]) * step_size) >= inner_radius]
     vertex_counts = Counter(all_vertices)
     max_usage = max(vertex_counts.values())
     
     bottleneck_vertices = [vertex for vertex, count in vertex_counts.items() if count > max_usage * bottleneck_threshold]
     return bottleneck_vertices
 
-def bottleneck_vertices_from_config(config, radius, step_size, bottleneck_threshold=0.5):
+def bottleneck_vertices_from_config(config, inner_radius, outer_radius, step_size, bottleneck_threshold=0.5):
     """
     Perform bottleneck analysis on a given configuration.
     """
     graph, obj_vertex = graph_from_config(config, step_size=step_size)
-    target_vertices = get_target_vertices(graph, obj_vertex, radius, step_size)
+    target_vertices = get_target_vertices(graph, obj_vertex, inner_radius, outer_radius, step_size)
     paths = []
     for target in target_vertices:
         path = shortest_path(graph, obj_vertex, target)
         if path:
             paths.append(path)
-    return find_bottleneck_vertices(paths, bottleneck_threshold)
+    return find_bottleneck_vertices(paths, inner_radius, step_size, bottleneck_threshold)
 
 if __name__ == "__main__":
     # Define parameters
-    radius = 3.0  # Radius in actual distance
+    inner_radius = 1.0  # Radius in actual distance
+    outer_radius = 3.0  # Radius in actual distance
     step_size = 0.05  # Same as the step_size used in the grid generation
     bottleneck_threshold = 0.25  # Bottleneck threshold as a fraction of the maximum usage
     vertex_count = 200  # Number of bottleneck vertices to identify
@@ -89,7 +90,7 @@ if __name__ == "__main__":
     graph, obj_vertex = graph_from_config(config, step_size)
 
     # Perform bottleneck analysis
-    bottleneck_vertices = bottleneck_vertices_from_config(config, radius, step_size, bottleneck_threshold=bottleneck_threshold)
+    bottleneck_vertices = bottleneck_vertices_from_config(config, inner_radius, outer_radius, step_size, bottleneck_threshold=bottleneck_threshold)
 
     # Visualize the graph and bottleneck vertices
     fig, ax = plt.subplots()

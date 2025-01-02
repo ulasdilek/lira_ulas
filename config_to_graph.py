@@ -21,7 +21,7 @@ def graph_from_config(config : ry.Config, step_size : float) -> dict:
 
     occupancy_grid = np.ones((int(4/step_size), int(4/step_size)))
     for wall in wall_names:
-        print(f"Adding: {wall}")
+        # print(f"Adding: {wall}")
         wall_frame = config.getFrame(wall)
         wall_size = wall_frame.getSize()[:2]
         wall_size += size_offset
@@ -31,7 +31,7 @@ def graph_from_config(config : ry.Config, step_size : float) -> dict:
         wall_indices = np.array([wall_anchor, wall_end])/step_size + grid_offset
         wall_indices = wall_indices.astype(int)
         wall_indices = np.clip(wall_indices, 0, occupancy_grid.shape)
-        print(wall_indices)
+        # print(wall_indices)
         occupancy_grid[wall_indices[0, 0]:wall_indices[1, 0], wall_indices[0, 1]:wall_indices[1, 1]] = 0
 
     obj_vertex = (config.getFrame(OBJ_NAME).getPosition()[:2]/step_size).astype(int) + grid_offset
