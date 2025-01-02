@@ -1,4 +1,4 @@
-from config_to_graph import graph_from_config
+from config_to_graph import graph_from_config, get_obj_vertex
 import robotic as ry
 import numpy as np
 import matplotlib.pyplot as plt
@@ -62,11 +62,14 @@ def find_bottleneck_vertices(paths, inner_radius, step_size, bottleneck_threshol
     bottleneck_vertices = [vertex for vertex, count in vertex_counts.items() if count > max_usage * bottleneck_threshold]
     return bottleneck_vertices
 
-def bottleneck_vertices_from_config(config, inner_radius, outer_radius, step_size, bottleneck_threshold=0.5):
+def bottleneck_vertices_from_config(config, inner_radius, outer_radius, step_size, bottleneck_threshold=0.5, graph=None):
     """
     Perform bottleneck analysis on a given configuration.
     """
-    graph, obj_vertex = graph_from_config(config, step_size=step_size)
+    if graph is None:
+        graph, obj_vertex = graph_from_config(config, step_size=step_size)
+    else:
+        obj_vertex = get_obj_vertex(config, step_size)
     target_vertices = get_target_vertices(graph, obj_vertex, inner_radius, outer_radius, step_size)
     paths = []
     for target in target_vertices:

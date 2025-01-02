@@ -6,6 +6,12 @@ import matplotlib.pyplot as plt
 from collections import defaultdict
 from math import sqrt
 
+def get_obj_vertex(config : ry.Config, step_size : float) -> np.ndarray:
+    OBJ_NAME = "obj"
+    grid_offset = np.array([2/step_size, 2/step_size]).astype(int)
+    obj_vertex = (config.getFrame(OBJ_NAME).getPosition()[:2]/step_size).astype(int) + grid_offset
+    return obj_vertex
+
 def graph_from_config(config : ry.Config, step_size : float) -> dict:
     wall_names = []
     OBJ_NAME = "obj"
@@ -34,7 +40,7 @@ def graph_from_config(config : ry.Config, step_size : float) -> dict:
         # print(wall_indices)
         occupancy_grid[wall_indices[0, 0]:wall_indices[1, 0], wall_indices[0, 1]:wall_indices[1, 1]] = 0
 
-    obj_vertex = (config.getFrame(OBJ_NAME).getPosition()[:2]/step_size).astype(int) + grid_offset
+    obj_vertex = get_obj_vertex(config, step_size)
 
     return graph_from_grid(occupancy_grid), obj_vertex
 
