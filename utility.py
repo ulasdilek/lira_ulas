@@ -146,6 +146,20 @@ def get_goal_score(
         + c_prox_goal * get_proximity_score(subgoal_frame, goal_frame) \
         + c_prox_object * get_proximity_score(subgoal_frame, object_frame)
 
+def get_config_score(
+        object_frame : ry.Frame,
+        agent_frame : ry.Frame,
+        goal_frame : ry.Frame,
+        config : ry.Config) -> int:
+    c_goal = 8
+    c_agent = 5
+    c_prox_goal = 5
+    c_prox_agent = 2
+    return  c_goal * int(naive_is_in_line_of_sight(object_frame, goal_frame, config)) \
+            + c_agent * int(naive_is_in_line_of_sight(object_frame, agent_frame, config)) \
+            + c_prox_goal * get_proximity_score(object_frame, goal_frame) \
+            + c_prox_agent * get_proximity_score(object_frame, agent_frame)
+
 
 def reachable(reach_config : ry.Config, object_name : str) -> bool:
     copy_config = ry.Config()
@@ -194,7 +208,7 @@ def reject(rej_config : ry.Config, solution_tree : 'SolutionTree') -> bool:
 
 
 POINT_COUNT = 200
-THRESHOLD = 5
+THRESHOLD = 0 # set to 0 for testing. original : 5
 SUBSET_SIZE = 50
 # counter = 0
 def propose_subgoals(config : ry.Config, object_name : str) -> list:
@@ -221,7 +235,7 @@ def propose_subgoals(config : ry.Config, object_name : str) -> list:
         copy_config.getFrame(object_name).setPosition(obj_pos)
 
         score = get_goal_score(copy_config.getFrame(SUB_GOAL_NAME),
-                               copy_config.getFrame(GOAL_OBJ_NAME),
+                               copy_config.getFrame(object_name),
                                copy_config.getFrame(EGO_NAME),
                                copy_config.getFrame(GOAL_NAME),
                                copy_config)
@@ -237,7 +251,7 @@ def propose_subgoals(config : ry.Config, object_name : str) -> list:
     return point_subset
 
 
-def display_points(config : ry.Config, subgoals : list) -> None:
+def display_points(config : ry.Config, subgoals : list, target : str = "") -> None:
     test_config = ry.Config()
     test_config.addConfigurationCopy(config)
     test_config.view_setCamera(config.getFrame(CAMERA_NAME))
@@ -249,7 +263,7 @@ def display_points(config : ry.Config, subgoals : list) -> None:
             .setPosition(list(point) + [0.2]) \
             .setColor([1, 0, 1])
         
-    test_config.view(True)
+    test_config.view(True, message=target)
     test_config.view_close()
     del test_config
 
@@ -278,8 +292,7 @@ class SolutionNode:
             copy_config = ry.Config()
             copy_config.addConfigurationCopy(goal_config)
             # copy_config.getFrame(OBJ_NAME).setPosition(copy_config.getFrame(SUB_GOAL_NAME).getPosition())
-            self.score = get_goal_score(copy_config.getFrame(SUB_GOAL_NAME),
-                                        copy_config.getFrame(GOAL_OBJ_NAME),
+            self.score = get_config_score(copy_config.getFrame(GOAL_OBJ_NAME),
                                         copy_config.getFrame(EGO_NAME),
                                         copy_config.getFrame(GOAL_NAME),
                                         copy_config)
