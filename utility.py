@@ -43,8 +43,8 @@ def naive_is_in_line_of_sight(object_frame : ry.Frame, target_frame : ry.Frame, 
     copy_config.addFrame("point_B") \
         .setShape(ry.ST.marker, [.2]) \
         .setPosition(object_position)
-    setContact(copy_config, GOAL_OBJ_NAME, 0)
-    setContact(copy_config, EGO_NAME, 0)
+    copy_config.getFrame(GOAL_OBJ_NAME).setContact(0)
+    copy_config.getFrame(EGO_NAME).setContact(0)
 
     # copy_config.view_setCamera(copy_config.getFrame(CAMERA_NAME))
     # copy_config.view(True)
@@ -150,7 +150,6 @@ def get_goal_score(
 def reachable(reach_config : ry.Config, object_name : str) -> bool:
     copy_config = ry.Config()
     copy_config.addConfigurationCopy(reach_config)
-    # setContact(copy_config, object_name, 0)
     copy_config.getFrame(object_name).setContact(0)
     rrt = ry.PathFinder()
     rrt.setProblem(copy_config,
