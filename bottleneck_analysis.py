@@ -51,18 +51,18 @@ def shortest_path(graph, start, end):
                 pq.put((new_distance, neighbor))
     return None  # No path found
 
-def find_bottleneck_vertices(paths : list, N : int) -> list:
+def find_bottleneck_vertices(paths : list, bottleneck_threshold : float) -> list:
     """
-    Detect the N most-used bottleneck vertices based on their frequency of occurrence in paths.
+    Identify vertices that are bottleneck vertices based on the given paths.
     """
     all_vertices = [vertex for path in paths for vertex in path]
     vertex_counts = Counter(all_vertices)
+    max_usage = max(vertex_counts.values())
     
-    # Get the N most common vertices
-    bottleneck_vertices = [vertex for vertex, count in vertex_counts.most_common(N)]
+    bottleneck_vertices = [vertex for vertex, count in vertex_counts.items() if count > max_usage * bottleneck_threshold]
     return bottleneck_vertices
 
-def bottleneck_vertices_from_config(config : ry.Config, radius : float, step_size : float, vertex_count=100) -> list:
+def bottleneck_vertices_from_config(config : ry.Config, radius : float, step_size : float, bottleneck_threshold=0.5) -> list:
     """
     Perform bottleneck analysis on a given configuration.
     """
@@ -73,7 +73,7 @@ def bottleneck_vertices_from_config(config : ry.Config, radius : float, step_siz
         path = shortest_path(graph, obj_vertex, target)
         if path:
             paths.append(path)
-    return find_bottleneck_vertices(paths, vertex_count)
+    return find_bottleneck_vertices(paths, bottleneck_threshold)
 
 if __name__ == "__main__":
     # Define parameters
@@ -89,7 +89,7 @@ if __name__ == "__main__":
     graph, obj_vertex = graph_from_config(config, step_size)
 
     # Perform bottleneck analysis
-    bottleneck_vertices = bottleneck_vertices_from_config(config, radius, step_size, vertex_count=vertex_count)
+    bottleneck_vertices = bottleneck_vertices_from_config(config, radius, step_size, bottleneck_threshold=bottleneck_threshold)
 
     # Visualize the graph and bottleneck vertices
     fig, ax = plt.subplots()
