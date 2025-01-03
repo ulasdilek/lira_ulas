@@ -57,7 +57,7 @@ def find_bottleneck_vertices(paths, inner_radius, step_size, bottleneck_threshol
     """
     all_vertices = [vertex for path in paths for vertex in path if np.linalg.norm(np.array(vertex) * step_size - np.array(paths[0][0]) * step_size) >= inner_radius]
     vertex_counts = Counter(all_vertices)
-    max_usage = max(vertex_counts.values())
+    max_usage = max(vertex_counts.values(), default=0)
     
     bottleneck_vertices = [vertex for vertex, count in vertex_counts.items() if count > max_usage * bottleneck_threshold]
     return bottleneck_vertices

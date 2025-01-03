@@ -31,7 +31,7 @@ CAMERA_NAME = "camera_top"
 FLOOR_NAME = "floor"
 GAP_COEFFICIENT = 1.1
 
-LOOP_LIMIT = 200
+LOOP_LIMIT = 7
 
 def solve_touch_with_komo(komo_config, obj_name):
     komo = ry.KOMO(komo_config, phases=1, slicesPerPhase=1, kOrder=0, enableCollisions=True)
@@ -218,6 +218,8 @@ def solve_with_bottleneck(puzzle_name):
             if not reachable(x, object_name):
                 continue
             bottleneck_vertices = bottleneck_vertices_from_config(x, inner_radius, outer_radius, step_size, bottleneck_threshold=bottleneck_threshold, graph=graph)
+            if len(bottleneck_vertices) == 0:
+                continue
             subgoals = vertex_to_position(bottleneck_vertices, step_size)
             for subgoal in subgoals:
                 new_config = ry.Config()
@@ -278,7 +280,7 @@ def solve_with_bottleneck(puzzle_name):
 
 results = {}
 
-REPEAT_COUNT = 10
+REPEAT_COUNT = 5
 for puzzle_name in puzzles:
     results[puzzle_name] = {}
     for strategy in strategies:
