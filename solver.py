@@ -7,13 +7,13 @@ import numpy as np
 import csv
 
 puzzles = [
-    # "p1-two-blocks",
+    "p1-two-blocks",
     "p2-maze-easy",
-    # "p3-maze",
-    # "p4-four-blocks",
+    "p3-maze",
+    "p4-four-blocks",
     "p5-wall-easy",
-    # "p6-wall",
-    # "p7-o-room",
+    "p6-wall",
+    "p7-o-room",
     "p8-corner",
     "p9-cube-free"
 ]
@@ -30,6 +30,8 @@ GOAL_NAME = "goal"
 CAMERA_NAME = "camera_top"
 FLOOR_NAME = "floor"
 GAP_COEFFICIENT = 1.1
+
+LOOP_LIMIT = 200
 
 def solve_touch_with_komo(komo_config, obj_name):
     komo = ry.KOMO(komo_config, phases=1, slicesPerPhase=1, kOrder=0, enableCollisions=True)
@@ -112,7 +114,8 @@ def solve_with_fpr(puzzle_name):
     solution_path = None
     start_node = SolutionNode(config, GOAL_OBJ_NAME)
     L = SolutionTree(start_node)
-    while L.get_len() > 0:
+    loop_count = 0
+    while L.get_len() > 0 and loop_count < LOOP_LIMIT:
         cur_node = L.get_next_node()
         x = cur_node.get_config()
 
@@ -143,6 +146,7 @@ def solve_with_fpr(puzzle_name):
                     L.add_node(new_node)
                 else:
                     del new_config
+        loop_count += 1
 
     if solution_path is None:
         return -1
@@ -200,7 +204,8 @@ def solve_with_bottleneck(puzzle_name):
     bottleneck_threshold = 0.25
     graph, obj_vertex = graph_from_config(config, step_size)
 
-    while L.get_len() > 0:
+    loop_count = 0
+    while L.get_len() > 0 and loop_count < LOOP_LIMIT:
         cur_node = L.get_next_node()
         x = cur_node.get_config()
 
@@ -232,6 +237,7 @@ def solve_with_bottleneck(puzzle_name):
                     L.add_node(new_node)
                 else:
                     del new_config
+        loop_count += 1
 
     if solution_path is None:
         return -1
@@ -272,7 +278,7 @@ def solve_with_bottleneck(puzzle_name):
 
 results = {}
 
-REPEAT_COUNT = 1
+REPEAT_COUNT = 10
 for puzzle_name in puzzles:
     results[puzzle_name] = {}
     for strategy in strategies:
