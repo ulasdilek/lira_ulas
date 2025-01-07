@@ -70,8 +70,8 @@ def graph_from_grid(grid: np.ndarray) -> dict:
 
 if __name__ == "__main__":
     config = ry.Config()
-    config.addFile("puzzles/p3-maze.g")
-    graph, obj_vertex = graph_from_config(config, 0.05)
+    config.addFile("puzzles/p7-o-room.g")
+    graph, obj_vertex = graph_from_config(config, 0.1)
 
     # Visualize the graph using matplotlib
     fig, ax = plt.subplots()

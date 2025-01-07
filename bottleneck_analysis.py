@@ -80,15 +80,15 @@ def bottleneck_vertices_from_config(config, inner_radius, outer_radius, step_siz
 
 if __name__ == "__main__":
     # Define parameters
-    inner_radius = 1.0  # Radius in actual distance
-    outer_radius = 3.0  # Radius in actual distance
-    step_size = 0.05  # Same as the step_size used in the grid generation
-    bottleneck_threshold = 0.25  # Bottleneck threshold as a fraction of the maximum usage
+    inner_radius = 0.75  # Radius in actual distance
+    outer_radius = 2.0  # Radius in actual distance
+    step_size = 0.1  # Same as the step_size used in the grid generation
+    bottleneck_threshold = 0.5  # Bottleneck threshold as a fraction of the maximum usage
     vertex_count = 200  # Number of bottleneck vertices to identify
 
     # Load the configuration and convert it to a graph
     config = ry.Config()
-    config.addFile("puzzles/p3-maze.g")
+    config.addFile("puzzles/p6-wall.g")
     # config.getFrame("obj").setPosition([0.2, 0.5, 0.2]) # manual override for p3-maze
     graph, obj_vertex = graph_from_config(config, step_size)
 
