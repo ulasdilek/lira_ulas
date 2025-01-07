@@ -1,7 +1,0 @@
-Puzzle,Strategy,Average Time (ms),Variance Time (ms),Average Steps,Variance Steps
-p1-two-blocks,bottleneck,52963.92846107483,0.0,270.0,0.0
-p2-maze-easy,bottleneck,2284.2299938201904,0.0,183.0,0.0
-p5-wall-easy,bottleneck,757.1158409118652,0.0,248.0,0.0
-p6-wall,bottleneck,24596.266746520996,0.0,421.0,0.0
-p8-corner,bottleneck,8385.319232940674,0.0,190.0,0.0
-p9-cube-free,bottleneck,612.4002933502197,0.0,134.0,0.0
